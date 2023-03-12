@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=0.5">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        div {
+            font-size: 3px;
+            font-family: courier;
+            letter-spacing: 0px;
+            font-weight: 700;
+            line-height: 0.7;
+            /* background-color: grey; */
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="mycanvas" width="1000" height="600">
+           
+        </canvas>
+    <div></div>
+</body>
+<script>
+    var div = document.querySelector("div");
+
+    function draw() {
+        var mycanvas = document.querySelector("#mycanvas");
+        // 检测是否支持canvas
+        if (!mycanvas.getContext)
+        //只有在函数中才可以用return，终止程序
+            return;
+        ctx = mycanvas.getContext("2d");
+
+        //------------------
+        var img = new Image();
+        // img.src = "./feiniao.png"
+        img.src = "./li2.jpeg"
+        img.width = 300;
+        img.height = 300 * img.naturalHeight / img.naturalWidth;
+        img.onload = function() {
+            ctx.drawImage(img, 0, 0, img.width, img.height);
+            // console.log(img.width);
+            // console.log(img.naturalWidth);
+            var imageData = ctx.getImageData(0, 0, img.width, img.height);
+            var imgData = imageData.data;
+            for (var i = 0; i < imgData.length; i += 4) {
+                imgData[i + 0] = 0.299 * imgData[i + 0]; //r
+                imgData[i + 1] = 0.587 * imgData[i + 1]; //g
+                imgData[i + 2] = 0.114 * imgData[i + 2]; //b
+                imgData[i + 3] = 255; //a
+            }
+            imageData.data = imgData;
+            ctx.putImageData(imageData, 400, 0);
+
+            // ctx.scale(0.5, 0.5); //只影响绘制图形，操作不了imageData对象
+            // ctx.fillRect(0, 1000, 300, 300);
+            //--------------------------------------------------
+            //缩放为二分之一
+
+            ctx.drawImage(img, 0, 400, img.width / 2, img.height / 2);
+            //--------------------------------------------------
+            var imageData1 = ctx.getImageData(0, 400, img.width / 2, img.height / 2);
+            //********字符画模版数据data****************
+            var data = imageData1.data;
+            // data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+            var w = imageData1.width;
+            var h = imageData1.height;
+            var l = data.length;
+            var r, g, b;
+            var char = ["#", "8", "?", "!", ".", "&nbsp"];
+            // var char = ["&nbsp", "。", "...", "!", "#", "8"];
+            //将4个值变1个值，一行一组
+            //灰度值
+            var gray;
+            //灰度字符
+            var grayChar;
+            //带色彩字符串
+            var grayColorChar;
+            //拼接字符串
+            var strAll = "";
+
+            // console.log(w);
+            // console.log(h);
+            // console.log(l);
+            //将rgba4个值合成一个灰度值
+            var arr = [];
+            var y;
+            for (let i = 0; i < l; i += 4) {
+                y = gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+                arr.push(y)
+            }
+            // console.log(arr);
+            //纵向
+            for (var i = 1; i <= h; i++) {
+                //横向
+                var colArr = [];
+                for (var j = 0; j < w; j++) {
+
+
+                    grayChar = char[Math.floor(arr[(i - 1) * w + j - 1] / 256 * char.length)];
+                    grayColorChar = `<b style="rgb(${r},${g},${b})"> ${ grayChar}</b>`;
+                    colArr.push(grayChar);
+                }
+                strAll += colArr.join("") + "</br>";
+            }
+            div.innerHTML = strAll;
+
+        }
+
+    }
+    draw();
+</script>
+
+</html>
